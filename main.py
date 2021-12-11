@@ -1,27 +1,49 @@
 from operator import itemgetter
 
 
-def result(lowest_number, highest_number: int, top: int):
-    all_results = {}
-    all_len = {}
+def result(lowest_number, highest_number: int, quantity_to_return: int):
+    all_results = {}  # {number: collatz_list}
+    all_numb_and_len = {}  # {number: len(collatz_list)
+    all_len = []  # list of lens of each collatz_list  # we need it in generator
 
     for num in range(lowest_number, highest_number + 1):
-        res_list = col(num)
-        res_list = [i for i in res_list if i % 2 == 1]
+        collatz_list = collatz(num)
 
-        all_results[num] = res_list
-        all_len[num] = len(res_list)
+        # remove even numbers
+        collatz_list = [i for i in collatz_list if i % 2 == 1]
 
-    sorted_result = sorted(all_len.items(), key=itemgetter(1), reverse=True)
+        all_results[num] = collatz_list
+        all_numb_and_len[num] = len(collatz_list)
+        all_len.append(len(collatz_list))
 
-    for index, value in list(enumerate(sorted_result))[:top]:
+    # sort by len of collatz_list (from highest to lowest len)
+    sorted_numb_and_len = sorted(all_numb_and_len.items(), key=itemgetter(1), reverse=True)
+
+    exclude_repeated_even_numbers_generator = exclude_repeated_even_numbers(sorted_numb_and_len, all_len)
+    top_list = []
+    for i in exclude_repeated_even_numbers_generator:
+        top_list.append(i)
+        if len(top_list) == quantity_to_return:
+            break
+
+    # print result into console
+    for index, value in list(enumerate(top_list)):
         number, length = value
         print(
             f"{index + 1}. {number} ({length}): {all_results[number]}\n"
         )
 
 
-def col(n):
+def exclude_repeated_even_numbers(sorted_list, all_len):
+    # generator, which skips values where collatz_list_len (in this case - sorted_list[1])
+    # and number is even (sorted_list[0])
+    for numb, numb_len in sorted_list:
+        if all_len.count(numb_len) > 1 and numb % 2 == 0:
+            continue
+        yield numb, numb_len
+
+
+def collatz(n):
     sp = [n]
 
     if n < 1:
@@ -38,4 +60,4 @@ def col(n):
 
 
 if __name__ == '__main__':
-    result(3, 100, 12)
+    result(200, 300, 10)

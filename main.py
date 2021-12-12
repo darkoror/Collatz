@@ -1,7 +1,10 @@
 from operator import itemgetter
 
+from docx import Document
+from docx.shared import RGBColor
 
-def result(lowest_number, highest_number: int, quantity_to_return: int):
+
+def result(lowest_number, highest_number: int, quantity_to_return: int, filename='demo'):
     all_results = {}  # {number: collatz_list}
     all_numb_and_len = {}  # {number: len(collatz_list)
     all_len = []  # list of lens of each collatz_list  # we need it in generator
@@ -27,6 +30,30 @@ def result(lowest_number, highest_number: int, quantity_to_return: int):
             break
 
     # print result into console
+    # print_results(top_list, all_results)
+
+    # write results to MS Word file
+    write_results_to_word(filename, top_list, all_results)
+
+
+def write_results_to_word(filename, top_list, all_results):
+    document = Document()
+
+    for index, value in list(enumerate(top_list)):
+        number, length = value
+        p = document.add_paragraph('')
+        p.add_run(f"{index + 1}. {number} ({length}): [").bold = True
+        for i in all_results[number]:
+            if i % 3 == 0:
+                p.add_run(f'{i}, ').font.color.rgb = RGBColor(255, 0, 0)
+            else:
+                p.add_run(f'{i}, ')
+        p.add_run(']')
+
+    document.save(f'{filename}.docx')
+
+
+def print_results(top_list, all_results):
     for index, value in list(enumerate(top_list)):
         number, length = value
         print(
@@ -60,4 +87,4 @@ def collatz(n):
 
 
 if __name__ == '__main__':
-    result(200, 300, 10)
+    result(3, 100, 10)
